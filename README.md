@@ -316,11 +316,25 @@ docker-compose exec backend python manage.py makemigrations
 docker-compose exec backend python manage.py migrate
 ```
 
-### Run Custom Database Seeder
-To repopulate or seed the master catalog of vulnerabilities:
+### Run Live NIST NVD API Seeder
+Pen-Repo is integrated with the official **NIST NVD API v2.0** (`https://services.nvd.nist.gov/rest/json/cves/2.0`). This replaces large file-based databases with a real-time feed that dynamically synchronizes the local `VulnerabilityMaster` catalog.
+
+#### Automated Background Synchronization
+To ensure that container startup is fast and does not trigger Docker healthcheck failures, the synchronization process runs asynchronously in the background when the backend container starts. Logs are written to `/app/seed.log` inside the backend container.
+
+#### Manual Execution & Command Configuration
+You can run the synchronization tool manually inside the container to force update or pagination parameters:
+
 ```bash
-docker-compose exec backend python manage.py seed_vulnerabilities
+docker-compose exec backend python manage.py seed_vulnerabilities [options]
 ```
+
+**Available Options:**
+*   `--pages <n>`: Maximum number of pages to fetch. Set to `0` (default) to sync all available records.
+*   `--start-index <n>`: Starting pagination index (default: `0`).
+*   `--batch-size <n>`: DB batch transaction record count (default: `2000`).
+
+*Note: Due to rate-limiting policies enforced by the NIST API on public requests, the seeder automatically waits for 6 seconds between network requests. Do not terminate the process prematurely.*
 
 ---
 
