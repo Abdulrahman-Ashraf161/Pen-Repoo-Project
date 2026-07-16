@@ -1,0 +1,7 @@
+.env
+.env.*
+/pentest_reporting/reports/data/cves_seed.json
+__pycache__/
+*.pyc
+.venv/
+node_modules/
